@@ -9,7 +9,7 @@ int main() {
     const string daysOfWeek[7] = {"Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"};
 
     // Имя файла для записи заметок
-    string filename = "notes.txt";
+    string filename = "raspisanie.txt";
 
     // Открытие файла для записи
     ofstream outFile(filename);
