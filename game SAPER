@@ -1,0 +1,143 @@
+#include <iostream>
+#include <vector>
+#include <ctime>
+#include <cstdlib>
+
+using namespace std;
+
+const int WIDTH = 10;  // Ширина поля
+const int HEIGHT = 10; // Высота поля
+const int MINES = 10;  // Количество мин
+
+// Структура для клетки
+struct Cell {
+    bool isMine;
+    bool isRevealed;
+    int mineCount;
+
+    Cell() : isMine(false), isRevealed(false), mineCount(0) {}
+};
+
+// Класс игры
+class Minesweeper {
+private:
+    vector<vector<Cell>> field;
+
+public:
+    Minesweeper() {
+        field.resize(HEIGHT, vector<Cell>(WIDTH));
+        placeMines();
+        calculateMineCounts();
+    }
+
+    void placeMines() {
+        srand(time(0));
+        int placedMines = 0;
+
+        while (placedMines < MINES) {
+            int x = rand() % HEIGHT;
+            int y = rand() % WIDTH;
+
+            if (!field[x][y].isMine) {
+                field[x][y].isMine = true;
+                placedMines++;
+            }
+        }
+    }
+
+    void calculateMineCounts() {
+        for (int i = 0; i < HEIGHT; i++) {
+            for (int j = 0; j < WIDTH; j++) {
+                if (field[i][j].isMine) {
+                    for (int x = -1; x <= 1; x++) {
+                        for (int y = -1; y <= 1; y++) {
+                            int nx = i + x;
+                            int ny = j + y;
+                            if (nx >= 0 && nx < HEIGHT && ny >= 0 && ny < WIDTH) {
+                                field[nx][ny].mineCount++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    void revealCell(int x, int y) {
+        if (x < 0 || x >= HEIGHT || y < 0 || y >= WIDTH || field[x][y].isRevealed) {
+            return;
+        }
+        field[x][y].isRevealed = true;
+
+        if (field[x][y].mineCount == 0 && !field[x][y].isMine) {
+            for (int i = -1; i <= 1; i++) {
+                for (int j = -1; j <= 1; j++) {
+                    revealCell(x + i, y + j);
+                }
+            }
+        }
+    }
+
+    void printField(bool revealMines = false) {
+        for (int i = 0; i < HEIGHT; i++) {
+            for (int j = 0; j < WIDTH; j++) {
+                if (field[i][j].isRevealed) {
+                    cout << (field[i][j].isMine ? '*' : to_string(field[i][j].mineCount)) << " ";
+                } else {
+                    cout << "# ";
+                }
+            }
+            cout << endl;
+        }
+    }
+
+    bool isGameOver() {
+        for (int i = 0; i < HEIGHT; i++) {
+            for (int j = 0; j < WIDTH; j++) {
+                if (field[i][j].isMine && field[i][j].isRevealed) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    bool isWin() {
+        int revealedCount = 0;
+        for (int i = 0; i < HEIGHT; i++) {
+            for (int j = 0; j < WIDTH; j++) {
+                if (field[i][j].isRevealed || field[i][j].isMine) {
+                    revealedCount++;
+                }
+            }
+        }
+        return revealedCount == WIDTH * HEIGHT;
+    }
+};
+
+int main() {
+    Minesweeper game;
+    int x, y;
+
+    while (true) {
+        game.printField();
+        cout << "Введите координаты (x y): ";
+        cin >> x >> y;
+
+        game.revealCell(x, y);
+
+        if (game.isGameOver()) {
+            cout << "Вы попали на мину! Игра окончена." << endl;
+            game.printField(true);
+            break;
+        }
+
+        if (game.isWin()) {
+            cout << "Поздравляем! Вы выиграли!" << endl;
+            game.printField(true);
+            break;
+        }
+    }
+
+    return 0;
+}
